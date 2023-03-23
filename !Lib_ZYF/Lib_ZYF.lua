@@ -1,10 +1,20 @@
-﻿local addonName, addonTable = ...
+﻿----------------------------------------------------
+-- Assign addon space to local G var.  
+-- For sync addon space to each lua fils
+-----------------------------------------------------
+local _
+local _G = _G
+local addonName, G = ... 
+_G[addonName] = _G[addonName] or G
+-----------------------------------
+
 ---------
 if Lib_ZYF then 
 	return 
 else
 	Lib_ZYF = {}
 end
+
 ---------
 local print = print
 local type = type
@@ -73,7 +83,7 @@ function Lib_ZYF:FrameSetOnUpdate(frame, sec, callback, ...)
 			if flagRunning == false then
 				if type(callback) == "function" then
 					flagRunning = true
-					callback(arg)
+					callback(frame, arg)
 					flagRunning = false
 				end
 				SinceUpdateTime = 0
@@ -85,10 +95,10 @@ end
 ---------設定定時更新某個函式幾次
 function Lib_ZYF:SetOnUpdateTimes(sec, times, callback, ...)
 ---------
+	local arg = ...
 	local DummyFrame = CreateFrame("Frame","ZYFOnUpdateTimes_"..sec.."_"..times.."_"..GetTime())
 	local SinceUpdateTime = 0
-	local UpdateTimes = 0
-	local arg = ...
+	local UpdateTimes = 0	
 	local flagRunning = false
 	
 	DummyFrame:SetScript("OnUpdate", function(self, elapsedTime)
@@ -129,7 +139,7 @@ function Lib_ZYF:FrameSetOnUpdateTimes(frame, sec, times,callback, ...)
 			if SinceUpdateTime >= sec then 			
 				if (type(callback) == "function") and (flagRunning == false) then
 					flagRunning = true
-					callback(arg)
+					callback(frame, arg)
 					flagRunning = false
 				end
 				SinceUpdateTime = 0
@@ -146,9 +156,9 @@ end
 ---------設定幾秒後執行某個函式一次
 function Lib_ZYF:SetOnUpdateOnce(sec, callback, ...)
 ---------
-	local DummyFrame = CreateFrame("Frame","ZYFOnUpdateOnce_"..GetTime())
-	local SinceUpdateTime = 0
 	local arg = ...
+	local DummyFrame = CreateFrame("Frame","ZYFOnUpdateOnce_"..GetTime())
+	local SinceUpdateTime = 0   	
 	
 	DummyFrame:SetScript("OnUpdate",function(self,elapsedTime)
 		SinceUpdateTime = SinceUpdateTime + elapsedTime
@@ -169,14 +179,15 @@ function Lib_ZYF:FrameSetOnUpdateOnce(frame, sec,callback,...)
 ---------
 	if frame == nil then return end
 	
-	local SinceUpdateTime = 0
 	local arg = ...
+	local SinceUpdateTime = 0
+	
 	frame:SetScript("OnUpdate",function(self,elapsedTime)
 		SinceUpdateTime = SinceUpdateTime + elapsedTime
 		
 		if SinceUpdateTime >= sec then 			
 			if type(callback) == "function" then
-				callback(arg)
+				callback(frame, arg)
 			end
 			SinceUpdateTime = 0
 			self:StopOnUpdate(frame)
@@ -188,8 +199,7 @@ end
 Lib_ZYF.Events = {}
 function Lib_ZYF:SetEvent(event, callback, ...)
 ---------
-	local arg = ...
-	-- local	t = self
+	local arg = ...	
 	local t = Lib_ZYF		
 	local f = CreateFrame("Frame","ZYFCombatEvent_"..GetTime())
 	f:RegisterEvent(event)
@@ -203,9 +213,9 @@ end
 Lib_ZYF.CombatEvents = {}
 function Lib_ZYF:SetCombatLogEvent(subEvent,callback,...)
 ---------
-	local idx
-	-- local	t = self
-	local 	t = Lib_ZYF		
+	local arg = ...
+	local idx	
+	local t = Lib_ZYF		
 	t.CombatEvents[subEvent] = t.CombatEvents[subEvent] or {}
 	
 	--idx = #Lib_ZYF.CombatEvents[subEvent] + 1
@@ -215,8 +225,7 @@ function Lib_ZYF:SetCombatLogEvent(subEvent,callback,...)
 end
 ---------
 Lib_ZYF:SetEvent("COMBAT_LOG_EVENT_UNFILTERED", function()
----------
-		-- local	t = self
+---------		
 		local 	t = Lib_ZYF		
 		local 	tmp = CombatLogGetCurrentEventInfo()	
 		local 	timestp, event, hideCaster, 
